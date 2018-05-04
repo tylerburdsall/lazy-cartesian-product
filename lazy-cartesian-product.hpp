@@ -11,10 +11,8 @@
 #include <random>
 #include <algorithm>
 #include <fstream>
-
-#ifdef _WIN32
 #include <unordered_set>
-#endif
+
 
 using std::fstream;
 using std::ios;
@@ -41,12 +39,12 @@ namespace lazycp
 		static const vector<string> entry_at(const vector<vector<string>> &combinations, const long &index)
 		{
 			const precomputed_stats pc = precompute(combinations);
-			if (n < 0 || n >= pc.max_size)
+			if (index  < 0 || index >= pc.max_size)
 			{
 				throw "Entry cannot be out of range";
 			}
 
-			const vector<string> combination = entry_at(combinations, n, pc);
+			const vector<string> combination = entry_at(combinations, index, pc);
 			return combination;
 		}
 		static const vector<long> generate_random_indices(const long &sample_size, const long &max_size)
@@ -59,7 +57,7 @@ namespace lazycp
 			vector<long> random_indices;
 			random_device rd;
 			mt19937_64 generator{rd()};
-			uniform_int_distribution<> dist{0, max_size - 1};
+			uniform_int_distribution<> dist{0, (int)(max_size - 1)};
 			unordered_set<long> candidates;
 
 			while (candidates.size() < sample_size)
@@ -81,7 +79,7 @@ namespace lazycp
 			}
 			precomputed_stats ps = precompute(combinations);
 
-			vector<long> sampled_indicies = generate_random_indices(size, ps.max_size);
+			vector<long> sampled_indicies = generate_random_indices(sample_size, ps.max_size);
 			vector<vector<string>> subset;
 			for (const long &i : sampled_indicies)
 			{
@@ -90,56 +88,7 @@ namespace lazycp
 
 			return subset;
 		}
-		static void write_to_json(const vector<string> &keys, const vector<vector<string>> &combinations, const string &filename)
-		{
-			if (keys.empty())
-			{
-				throw "Questions cannot be empty";
-			}
-			if (combinations.empty())
-			{
-				throw "Rows cannot be empty";
-			}
-			if (filename.empty())
-			{
-				throw "Filename cannot be empty";
-			}
-
-			if (keys.size() != combinations[0].size())
-			{
-				throw "Questions and answers must have matching sizes";
-			}
-
-			fstream file;
-			file.open(filename, ios::app);
-			file << "[";
-			long q_size = keys.size();
-			for (auto &row : combinations)
-			{
-				file << "{";
-				for (long i = 0; i < q_size; ++i)
-				{
-					if (i == q_size - 1)
-					{
-						file << "\"" << keys[i] << "\":\"" << row[i] << "\"";
-					}
-					else
-					{
-						file << "\"" << keys[i] << "\":\"" << row[i] << "\",";
-					}
-				}
-				if (&row == &combinations.back())
-				{
-					file << "}";
-				}
-				else
-				{
-					file << "},";
-				}
-			}
-			file << "]";
-			file.close();
-		}
+		
 
 	private:
 		static const precomputed_stats precompute(const vector<vector<string>> &combinations)
@@ -170,7 +119,7 @@ namespace lazycp
 		{
 			return sample <= max_size;
 		}
-		static const long compute_max_size(const vector<vector<string>> &)
+		static const long compute_max_size(const vector<vector<string>> &combinations)
 		{
 			long size = 1;
 			int length = combinations.size();
