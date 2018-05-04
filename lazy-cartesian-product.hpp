@@ -70,7 +70,19 @@ namespace lazycp
 
 			return subset;
 		}
-		
+
+		static const long compute_max_size(const vector<vector<string>> &combinations)
+		{
+			long size = 1;
+			int length = combinations.size();
+
+			for (vector<vector<string>>::const_iterator it = combinations.begin(); it != combinations.end(); ++it)
+			{
+				size *= (*it).size();
+			}
+
+			return size;
+		}
 
 	private:
 		static const precomputed_stats precompute(const vector<vector<string>> &combinations)
@@ -125,18 +137,7 @@ namespace lazycp
 		{
 			return sample <= max_size;
 		}
-		static const long compute_max_size(const vector<vector<string>> &combinations)
-		{
-			long size = 1;
-			int length = combinations.size();
-
-			for (vector<vector<string>>::const_iterator it = combinations.begin(); it != combinations.end(); ++it)
-			{
-				size *= (*it).size();
-			}
-
-			return size;
-		}
+		
 		static const vector<string> entry_at(const vector<vector<string>> &combinations, const long &n, const precomputed_stats &ps)
 		{
 			long length = combinations.size();
