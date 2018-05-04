@@ -74,8 +74,6 @@ namespace lazycp
 		static const long compute_max_size(const vector<vector<string>> &combinations)
 		{
 			long size = 1;
-			int length = combinations.size();
-
 			for (vector<vector<string>>::const_iterator it = combinations.begin(); it != combinations.end(); ++it)
 			{
 				size *= (*it).size();
@@ -121,8 +119,7 @@ namespace lazycp
 			mt19937_64 generator{rd()};
 			uniform_int_distribution<> dist{0, (int)(max_size - 1)};
 			unordered_set<long> candidates;
-
-			while (candidates.size() < sample_size)
+			while (candidates.size() < (unsigned)sample_size)
 			{
 				candidates.insert(dist(generator));
 			}
