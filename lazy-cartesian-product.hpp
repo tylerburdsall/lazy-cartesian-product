@@ -4,8 +4,13 @@
  * Licensed under the MIT license
  */
 
+
 #ifndef _LAZY_CARTESIAN_PRODUCT
 #define _LAZY_CARTESIAN_PRODUCT
+
+#define MAJOR_VERSION 1
+#define MINOR_VERSION 0
+
 #include <string>
 #include <vector>
 #include <random>
