@@ -8,8 +8,8 @@
 #ifndef _LAZY_CARTESIAN_PRODUCT
 #define _LAZY_CARTESIAN_PRODUCT
 
-#define MAJOR_VERSION 1
-#define MINOR_VERSION 0
+#define LCP_MAJOR_VERSION 1
+#define LCP_MINOR_VERSION 1
 
 #include <string>
 #include <vector>
@@ -55,17 +55,28 @@ namespace lazycp
 
 		static const vector<vector<string>> generate_samples(const vector<vector<string>> combinations, const long &sample_size)
 		{
+			long max_size = compute_max_size(combinations);
 			if (combinations.size() == 0)
 			{
 				throw "The given list of combinations cannot be 0";
 			}
 			precomputed_stats ps = precompute(combinations);
 
-			vector<long> sampled_indicies = generate_random_indices(sample_size, ps.max_size);
 			vector<vector<string>> subset;
-			for (const long &i : sampled_indicies)
+			if (sample_size != max_size)
 			{
-				subset.push_back(entry_at(combinations, i, ps));
+				vector<long> sampled_indicies = generate_random_indices(sample_size, ps.max_size);
+				for (const long &i : sampled_indicies)
+				{
+					subset.push_back(entry_at(combinations, i, ps));
+				}
+			}
+			else
+			{
+				for (long i = 0; i < max_size; ++i)
+				{
+					subset.push_back(entry_at(combinations, i, ps));
+				}
 			}
 
 			return subset;
@@ -109,7 +120,7 @@ namespace lazycp
 		}
 		static const vector<long> generate_random_indices(const long &sample_size, const long &max_size)
 		{
-			if (sample_size >= max_size)
+			if (sample_size > max_size)
 			{
 				throw "Sample size cannot be larger than possible size";
 			}
