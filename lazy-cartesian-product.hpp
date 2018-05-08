@@ -33,6 +33,41 @@ using std::exception;
 
 namespace lazycp
 {
+namespace errors
+{
+	struct index_error: public exception
+	{
+		const char *what () const throw()
+		{
+			return "Entry cannot be out of range";
+		}
+	};
+	struct empty_list: public exception
+	{
+		const char *what () const throw()
+		{
+			return "The given list of combinations cannot be empty";
+		}
+	};
+	struct empty_answers: public exception
+	{
+		const char *what () const throw()
+		{
+			return "The given list of answers cannot be empty";
+		}
+	};
+	struct invalid_sample_size: public exception
+	{
+		const char *what () const throw()
+		{
+			return "Given sample size cannot be larger than the maximum possible size";
+		}
+	};
+}
+}
+
+namespace lazycp
+{
 	
 	struct precomputed_stats
 	{
@@ -164,38 +199,5 @@ namespace lazycp
 		lazy_cartesian_product() {}
 	};
 }
-namespace lazycp
-{
-namespace errors
-{
-	struct index_error: public exception
-	{
-		const char *what () const throw()
-		{
-			return "Entry cannot be out of range";
-		}
-	};
-	struct empty_list: public exception
-	{
-		const char *what () const throw()
-		{
-			return "The given list of combinations cannot be empty";
-		}
-	};
-	struct empty_answers: public exception
-	{
-		const char *what () const throw()
-		{
-			return "The given list of answers cannot be empty";
-		}
-	};
-	struct invalid_sample_size: public exception
-	{
-		const char *what () const throw()
-		{
-			return "Given sample size cannot be larger than the maximum possible size";
-		}
-	};
-}
-}
+
 #endif
