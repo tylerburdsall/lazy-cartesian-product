@@ -37,19 +37,19 @@ namespace errors
 {
 	struct index_error: public runtime_error
 	{
-		index_error::index_error(): runtime_error("The given index cannot be out of range") {}
+		index_error(): runtime_error("The given index cannot be out of range") {}
 	};
 	struct empty_list_error: public runtime_error
 	{
-		empty_list_error::empty_list_error(): runtime_error("The given list of combinations cannot be empty") {}
+		empty_list_error(): runtime_error("The given list of combinations cannot be empty") {}
 	};
 	struct empty_answers_error: public runtime_error
 	{
-		empty_answers_error::empty_answers_error(): runtime_error("The given list of answers cannot be empty") {}
+		empty_answers_error(): runtime_error("The given list of answers cannot be empty") {}
 	};
 	struct invalid_sample_size_error: public runtime_error
 	{
-		invalid_sample_size_error::invalid_sample_size_error(): runtime_error("The given sample size cannot be out of range") {}
+		invalid_sample_size_error(): runtime_error("The given sample size cannot be out of range") {}
 	};
 }
 }
