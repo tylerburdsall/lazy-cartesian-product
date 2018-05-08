@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <fstream>
 #include <unordered_set>
-#include <exception>
+#include <stdexcept>
 
 
 using std::fstream;
@@ -29,39 +29,27 @@ using std::string;
 using std::uniform_int_distribution;
 using std::unordered_set;
 using std::vector;
-using std::exception;
+using std::runtime_error;
 
 namespace lazycp
 {
 namespace errors
 {
-	struct index_error: public exception
+	struct index_error: public runtime_error
 	{
-		const char *what () const throw()
-		{
-			return "Entry cannot be out of range";
-		}
+		index_error::index_error(): runtime_error("The given index cannot be out of range") {}
 	};
-	struct empty_list: public exception
+	struct empty_list_error: public runtime_error
 	{
-		const char *what () const throw()
-		{
-			return "The given list of combinations cannot be empty";
-		}
+		empty_list_error::empty_list_error(): runtime_error("The given list of combinations cannot be empty") {}
 	};
-	struct empty_answers: public exception
+	struct empty_answers_error: public runtime_error
 	{
-		const char *what () const throw()
-		{
-			return "The given list of answers cannot be empty";
-		}
+		empty_answers_error::empty_answers_error(): runtime_error("The given list of answers cannot be empty") {}
 	};
-	struct invalid_sample_size: public exception
+	struct invalid_sample_size_error: public runtime_error
 	{
-		const char *what () const throw()
-		{
-			return "Given sample size cannot be larger than the maximum possible size";
-		}
+		invalid_sample_size_error::invalid_sample_size_error(): runtime_error("The given sample size cannot be out of range") {}
 	};
 }
 }
@@ -95,7 +83,7 @@ namespace lazycp
 		{
 			if (combinations.size() == 0)
 			{
-				throw errors::empty_list();
+				throw errors::empty_list_error();
 			}
 			precomputed_stats ps = precompute(combinations);
 
@@ -136,7 +124,7 @@ namespace lazycp
 			precomputed_stats ps;
 			if (combinations.size() == 0)
 			{
-				throw errors::empty_answers();
+				throw errors::empty_answers_error();
 			}
 
 			long size = combinations.size();
@@ -159,7 +147,7 @@ namespace lazycp
 		{
 			if (sample_size > max_size)
 			{
-				throw errors::invalid_sample_size();
+				throw errors::invalid_sample_size_error();
 			}
 
 			vector<long> random_indices;
