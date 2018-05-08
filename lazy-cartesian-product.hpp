@@ -55,7 +55,6 @@ namespace lazycp
 
 		static const vector<vector<string>> generate_samples(const vector<vector<string>> combinations, const long &sample_size)
 		{
-			long max_size = compute_max_size(combinations);
 			if (combinations.size() == 0)
 			{
 				throw "The given list of combinations cannot be 0";
@@ -63,7 +62,7 @@ namespace lazycp
 			precomputed_stats ps = precompute(combinations);
 
 			vector<vector<string>> subset;
-			if (sample_size != max_size)
+			if (sample_size != ps.max_size)
 			{
 				vector<long> sampled_indicies = generate_random_indices(sample_size, ps.max_size);
 				for (const long &i : sampled_indicies)
@@ -73,7 +72,7 @@ namespace lazycp
 			}
 			else
 			{
-				for (long i = 0; i < max_size; ++i)
+				for (long i = 0; i < sample_size; ++i)
 				{
 					subset.push_back(entry_at(combinations, i, ps));
 				}
