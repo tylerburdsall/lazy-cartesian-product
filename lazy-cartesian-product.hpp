@@ -44,7 +44,7 @@ namespace lazycp
 		static const vector<string> entry_at(const vector<vector<string>> &combinations, const long &index)
 		{
 			const precomputed_stats pc = precompute(combinations);
-			if (index  < 0 || index >= pc.max_size)
+			if (index  < 0 || index > pc.max_size)
 			{
 				throw "Entry cannot be out of range";
 			}
