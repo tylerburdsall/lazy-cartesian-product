@@ -118,6 +118,29 @@ namespace lazycp
 			return size;
 		}
 
+		static const vector<long> generate_random_indices(const long &sample_size, const long &max_size)
+		{
+			if (sample_size > max_size)
+			{
+				throw errors::invalid_sample_size_error();
+			}
+
+			vector<long> random_indices;
+			random_device rd;
+			mt19937_64 generator{rd()};
+			uniform_int_distribution<> dist{0, (int)(max_size - 1)};
+			unordered_set<long> candidates;
+			while (candidates.size() < (unsigned)sample_size)
+			{
+				candidates.insert(dist(generator));
+			}
+
+			random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
+
+			sort(random_indices.begin(), random_indices.end());
+
+			return random_indices;
+		}
 	private:
 		static const precomputed_stats precompute(const vector<vector<string>> &combinations)
 		{
@@ -143,29 +166,7 @@ namespace lazycp
 			ps.max_size = compute_max_size(combinations);
 			return ps;
 		}
-		static const vector<long> generate_random_indices(const long &sample_size, const long &max_size)
-		{
-			if (sample_size > max_size)
-			{
-				throw errors::invalid_sample_size_error();
-			}
-
-			vector<long> random_indices;
-			random_device rd;
-			mt19937_64 generator{rd()};
-			uniform_int_distribution<> dist{0, (int)(max_size - 1)};
-			unordered_set<long> candidates;
-			while (candidates.size() < (unsigned)sample_size)
-			{
-				candidates.insert(dist(generator));
-			}
-
-			random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
-
-			sort(random_indices.begin(), random_indices.end());
-
-			return random_indices;
-		}
+		
 		static const bool sample_size_valid(const long &sample, const long &max_size)
 		{
 			return sample <= max_size;
