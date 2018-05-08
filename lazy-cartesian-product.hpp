@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <fstream>
 #include <unordered_set>
+#include <exception>
 
 
 using std::fstream;
@@ -28,9 +29,11 @@ using std::string;
 using std::uniform_int_distribution;
 using std::unordered_set;
 using std::vector;
+using std::exception;
 
 namespace lazycp
 {
+	
 	struct precomputed_stats
 	{
 		vector<long> divs;
@@ -46,7 +49,7 @@ namespace lazycp
 			const precomputed_stats pc = precompute(combinations);
 			if (index  < 0 || index > pc.max_size)
 			{
-				throw "Entry cannot be out of range";
+				throw errors::index_error();
 			}
 
 			const vector<string> combination = entry_at(combinations, index, pc);
@@ -57,7 +60,7 @@ namespace lazycp
 		{
 			if (combinations.size() == 0)
 			{
-				throw "The given list of combinations cannot be 0";
+				throw errors::empty_list();
 			}
 			precomputed_stats ps = precompute(combinations);
 
@@ -98,7 +101,7 @@ namespace lazycp
 			precomputed_stats ps;
 			if (combinations.size() == 0)
 			{
-				throw "The amount of answers cannot be 0";
+				throw errors::empty_answers();
 			}
 
 			long size = combinations.size();
@@ -121,7 +124,7 @@ namespace lazycp
 		{
 			if (sample_size > max_size)
 			{
-				throw "Sample size cannot be larger than possible size";
+				throw errors::invalid_sample_size();
 			}
 
 			vector<long> random_indices;
@@ -160,5 +163,39 @@ namespace lazycp
 
 		lazy_cartesian_product() {}
 	};
+}
+namespace lazycp
+{
+namespace errors
+{
+	struct index_error: public exception
+	{
+		const char *what () const throw()
+		{
+			return "Entry cannot be out of range";
+		}
+	};
+	struct empty_list: public exception
+	{
+		const char *what () const throw()
+		{
+			return "The given list of combinations cannot be empty";
+		}
+	};
+	struct empty_answers: public exception
+	{
+		const char *what () const throw()
+		{
+			return "The given list of answers cannot be empty";
+		}
+	};
+	struct invalid_sample_size: public exception
+	{
+		const char *what () const throw()
+		{
+			return "Given sample size cannot be larger than the maximum possible size";
+		}
+	};
+}
 }
 #endif
