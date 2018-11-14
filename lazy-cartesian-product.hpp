@@ -9,7 +9,7 @@
 #define _LAZY_CARTESIAN_PRODUCT
 
 #define LCP_MAJOR_VERSION 1
-#define LCP_MINOR_VERSION 1
+#define LCP_MINOR_VERSION 2
 
 #include <string>
 #include <vector>
@@ -59,15 +59,15 @@ namespace lazycp
 	
 	struct precomputed_stats
 	{
-		vector<long> divs;
-		vector<long> mods;
-		long max_size;
+		vector<unsigned long long> divs;
+		vector<unsigned long long> mods;
+		unsigned long long max_size;
 	};
 
 	class lazy_cartesian_product
 	{
 	public:
-		static const vector<string> entry_at(const vector<vector<string>> &combinations, const long &index)
+		static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &index)
 		{
 			const precomputed_stats pc = precompute(combinations);
 			if (index  < 0 || index > pc.max_size)
@@ -79,7 +79,7 @@ namespace lazycp
 			return combination;
 		}
 
-		static const vector<vector<string>> generate_samples(const vector<vector<string>> combinations, const long &sample_size)
+		static const vector<vector<string>> generate_samples(const vector<vector<string>> combinations, const unsigned long long &sample_size)
 		{
 			if (combinations.size() == 0)
 			{
@@ -90,15 +90,15 @@ namespace lazycp
 			vector<vector<string>> subset;
 			if (sample_size != ps.max_size)
 			{
-				vector<long> sampled_indicies = generate_random_indices(sample_size, ps.max_size);
-				for (const long &i : sampled_indicies)
+				vector<unsigned long long> sampled_indicies = generate_random_indices(sample_size, ps.max_size);
+				for (const unsigned long long &i : sampled_indicies)
 				{
 					subset.push_back(entry_at(combinations, i, ps));
 				}
 			}
 			else
 			{
-				for (long i = 0; i < sample_size; ++i)
+				for (unsigned long long i = 0; i < sample_size; ++i)
 				{
 					subset.push_back(entry_at(combinations, i, ps));
 				}
@@ -107,9 +107,9 @@ namespace lazycp
 			return subset;
 		}
 
-		static const long compute_max_size(const vector<vector<string>> &combinations)
+		static const unsigned long long compute_max_size(const vector<vector<string>> &combinations)
 		{
-			long size = 1;
+			unsigned long long size = 1;
 			for (vector<vector<string>>::const_iterator it = combinations.begin(); it != combinations.end(); ++it)
 			{
 				size *= (*it).size();
@@ -118,19 +118,19 @@ namespace lazycp
 			return size;
 		}
 
-		static const vector<long> generate_random_indices(const long &sample_size, const long &max_size)
+		static const vector<unsigned long long> generate_random_indices(const unsigned long long &sample_size, const unsigned long long &max_size)
 		{
 			if (sample_size > max_size)
 			{
 				throw errors::invalid_sample_size_error();
 			}
 
-			vector<long> random_indices;
+			vector<unsigned long long> random_indices;
 			random_device rd;
 			mt19937_64 generator{rd()};
-			uniform_int_distribution<> dist{0, (int)(max_size - 1)};
-			unordered_set<long> candidates;
-			while (candidates.size() < (unsigned)sample_size)
+			uniform_int_distribution<unsigned long long> dist{0,(max_size - 1)};
+			unordered_set<unsigned long long> candidates;
+			while (candidates.size() < sample_size)
 			{
 				candidates.insert(dist(generator));
 			}
@@ -150,14 +150,14 @@ namespace lazycp
 				throw errors::empty_answers_error();
 			}
 
-			long size = combinations.size();
+			unsigned long long size = combinations.size();
 			ps.divs.resize(size);
 			ps.mods.resize(size);
-			long factor = 1;
+			unsigned long factor = 1;
 
-			for (int i = size - 1; i >= 0; --i)
+			for (long long i = size - 1; i >= 0; --i)
 			{
-				long items = combinations[i].size();
+				long long items = combinations[i].size();
 				ps.divs[i] = factor;
 				ps.mods[i] = items;
 				factor *= items;
@@ -167,17 +167,17 @@ namespace lazycp
 			return ps;
 		}
 		
-		static const bool sample_size_valid(const long &sample, const long &max_size)
+		static const bool sample_size_valid(const unsigned long long &sample, const unsigned long &max_size)
 		{
 			return sample <= max_size;
 		}
 		
-		static const vector<string> entry_at(const vector<vector<string>> &combinations, const long &n, const precomputed_stats &ps)
+		static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &n, const precomputed_stats &ps)
 		{
-			long length = combinations.size();
+			unsigned long long length = combinations.size();
 			vector<string> combination(length);
 
-			for (long i = 0; i < length; ++i)
+			for (unsigned long long i = 0; i < length; ++i)
 			{
 				combination[i] = combinations[i][(n / ps.divs[i]) % ps.mods[i]];
 			}
