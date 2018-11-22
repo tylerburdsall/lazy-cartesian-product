@@ -97,21 +97,6 @@ namespace lazycp
 			const vector<string> combination = boost_entry_at(combinations, parsed_index, pc);
 			return combination;
 		}
-#else
-		static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &index)
-		{
-			const precomputed_stats pc = precompute(combinations);
-			if (index  < 0 || index >= pc.max_size)
-			{
-				throw errors::index_error();
-			}
-
-			const vector<string> combination = entry_at(combinations, index, pc);
-			return combination;
-		}
-#endif
-
-#ifdef USE_BOOST
 		static const vector<vector<string>> boost_generate_samples(const vector<vector<string>> combinations, const uint1024_t &sample_size)
 		{
 			if (combinations.size() == 0)
@@ -139,7 +124,50 @@ namespace lazycp
 
 			return subset;
 		}
+		static const uint1024_t boost_compute_max_size(const vector<vector<string>> &combinations)
+		{
+			uint1024_t size(1);
+			for (vector<vector<string>>::const_iterator it = combinations.begin(); it != combinations.end(); ++it)
+			{
+				size *= (*it).size();
+			}
+
+			return size;
+		}
+                static const vector<uint1024_t> boost_generate_random_indices(const uint1024_t &sample_size, const uint1024_t &max_size)
+		{
+			if (sample_size > max_size)
+			{
+				throw errors::invalid_sample_size_error();
+			}
+                        typedef independent_bits_engine<mt19937, 1024, uint1024_t> generator_type;
+                        generator_type gen;
+			vector<uint1024_t> random_indices;
+			uniform_int_distribution<uint1024_t> dist{0,(max_size - 1)};
+			unordered_set<uint1024_t> candidates;
+			while (candidates.size() < sample_size)
+			{
+				candidates.insert(dist(gen));
+			}
+
+			random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
+
+			sort(random_indices.begin(), random_indices.end());
+
+			return random_indices;
+		}
 #else
+		static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &index)
+		{
+			const precomputed_stats pc = precompute(combinations);
+			if (index  < 0 || index >= pc.max_size)
+			{
+				throw errors::index_error();
+			}
+
+			const vector<string> combination = entry_at(combinations, index, pc);
+			return combination;
+		}
 		static const vector<vector<string>> generate_samples(const vector<vector<string>> combinations, const unsigned long long &sample_size)
 		{
 			if (combinations.size() == 0)
@@ -167,19 +195,6 @@ namespace lazycp
 
 			return subset;
 		}
-#endif
-#ifdef USE_BOOST
-		static const uint1024_t boost_compute_max_size(const vector<vector<string>> &combinations)
-		{
-			uint1024_t size(1);
-			for (vector<vector<string>>::const_iterator it = combinations.begin(); it != combinations.end(); ++it)
-			{
-				size *= (*it).size();
-			}
-
-			return size;
-		}
-#else
 		static const unsigned long long compute_max_size(const vector<vector<string>> &combinations)
 		{
 			unsigned long long size = 1;
@@ -190,33 +205,7 @@ namespace lazycp
 
 			return size;
 		}
-#endif
-
-#ifdef USE_BOOST
-                static const vector<uint1024_t> boost_generate_random_indices(const uint1024_t &sample_size, const uint1024_t &max_size)
-		{
-			if (sample_size > max_size)
-			{
-				throw errors::invalid_sample_size_error();
-			}
-                        typedef independent_bits_engine<mt19937, 1024, uint1024_t> generator_type;
-                        generator_type gen;
-			vector<uint1024_t> random_indices;
-			uniform_int_distribution<uint1024_t> dist{0,(max_size - 1)};
-			unordered_set<uint1024_t> candidates;
-			while (candidates.size() < sample_size)
-			{
-				candidates.insert(dist(gen));
-			}
-
-			random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
-
-			sort(random_indices.begin(), random_indices.end());
-
-			return random_indices;
-		}
-#else
-		static const vector<unsigned long long> generate_random_indices(const unsigned long long &sample_size, const unsigned long long &max_size)
+                static const vector<unsigned long long> generate_random_indices(const unsigned long long &sample_size, const unsigned long long &max_size)
 		{
 			if (sample_size > max_size)
 			{
@@ -266,8 +255,25 @@ namespace lazycp
 			ps.max_size = boost_compute_max_size(combinations);
 			return ps;
 		}
+		static const bool boost_sample_size_valid(const uint1024_t &sample, const uint1024_t &max_size)
+		{
+			return sample <= max_size;
+		}
+
+		static const vector<string> boost_entry_at(const vector<vector<string>> &combinations, const uint1024_t &n, const precomputed_stats &ps)
+		{
+			unsigned long long length(combinations.size());
+			vector<string> combination(length);
+
+			for (unsigned long long i = 0; i < length; ++i)
+			{
+				combination[i] = combinations[i][(unsigned long long)((uint1024_t)(n / ps.divs[i]) % ps.mods[i])];
+			}
+
+			return combination;
+		}
 #else
-		static const precomputed_stats precompute(const vector<vector<string>> &combinations)
+                static const precomputed_stats precompute(const vector<vector<string>> &combinations)
 		{
 			precomputed_stats ps;
 			if (combinations.size() == 0)
@@ -291,34 +297,11 @@ namespace lazycp
 			ps.max_size = compute_max_size(combinations);
 			return ps;
 		}
-#endif
-#ifdef USE_BOOST
-		static const bool boost_sample_size_valid(const uint1024_t &sample, const uint1024_t &max_size)
+                static const bool sample_size_valid(const unsigned long long &sample, const unsigned long &max_size)
 		{
 			return sample <= max_size;
 		}
-
-#endif
-		static const bool sample_size_valid(const unsigned long long &sample, const unsigned long &max_size)
-		{
-			return sample <= max_size;
-		}
-#ifdef USE_BOOST
-		static const vector<string> boost_entry_at(const vector<vector<string>> &combinations, const uint1024_t &n, const precomputed_stats &ps)
-		{
-			unsigned long long length(combinations.size());
-			vector<string> combination(length);
-
-			for (unsigned long long i = 0; i < length; ++i)
-			{
-				combination[i] = combinations[i][(unsigned long long)((uint1024_t)(n / ps.divs[i]) % ps.mods[i])];
-			}
-
-			return combination;
-		}
-
-#else	
-		static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &n, const precomputed_stats &ps)
+                static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &n, const precomputed_stats &ps)
 		{
 			unsigned long long length = combinations.size();
 			vector<string> combination(length);
@@ -330,9 +313,8 @@ namespace lazycp
 
 			return combination;
 		}
-
-		lazy_cartesian_product() {}
 #endif
+                lazy_cartesian_product() {}
 	};
-}
 #endif
+}
