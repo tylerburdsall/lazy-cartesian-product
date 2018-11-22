@@ -9,27 +9,37 @@
 #define _LAZY_CARTESIAN_PRODUCT
 
 #define LCP_MAJOR_VERSION 1
-#define LCP_MINOR_VERSION 2
+#define LCP_MINOR_VERSION 3
 
 #include <string>
-#include <vector>
-#include <random>
 #include <algorithm>
 #include <fstream>
 #include <unordered_set>
 #include <stdexcept>
-
+#include <cmath>
+#ifdef USE_BOOST
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/random.hpp>
+#include <boost/container/vector.hpp>
+using namespace boost::random;
+using namespace boost::multiprecision;
+using boost::container::vector;
+#else
+#include <random>
+#include <vector>
+using std::mt19937_64;
+using std::uniform_int_distribution;
+using std::random_device;
+using std::vector;
+#endif
 
 using std::fstream;
 using std::ios;
-using std::mt19937_64;
-using std::random_device;
 using std::sort;
 using std::string;
-using std::uniform_int_distribution;
 using std::unordered_set;
-using std::vector;
 using std::runtime_error;
+using std::floor;
 
 namespace lazycp
 {
@@ -56,21 +66,42 @@ namespace errors
 
 namespace lazycp
 {
-	
+#ifdef USE_BOOST	
+	struct precomputed_stats
+	{
+		vector<uint1024_t> divs;
+		vector<uint1024_t> mods;
+		uint1024_t max_size;
+	};
+#else
 	struct precomputed_stats
 	{
 		vector<unsigned long long> divs;
 		vector<unsigned long long> mods;
 		unsigned long long max_size;
 	};
-
+#endif
 	class lazy_cartesian_product
 	{
 	public:
+#ifdef USE_BOOST
+                static const vector<string> boost_entry_at(const vector<vector<string>> &combinations, const string &index)
+		{
+			const precomputed_stats pc = boost_precompute(combinations);
+                        uint1024_t parsed_index(index);
+			if (parsed_index  < 0 || parsed_index >= pc.max_size)
+			{
+				throw errors::index_error();
+			}
+
+			const vector<string> combination = boost_entry_at(combinations, parsed_index, pc);
+			return combination;
+		}
+#else
 		static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &index)
 		{
 			const precomputed_stats pc = precompute(combinations);
-			if (index  < 0 || index > pc.max_size)
+			if (index  < 0 || index >= pc.max_size)
 			{
 				throw errors::index_error();
 			}
@@ -78,7 +109,37 @@ namespace lazycp
 			const vector<string> combination = entry_at(combinations, index, pc);
 			return combination;
 		}
+#endif
 
+#ifdef USE_BOOST
+		static const vector<vector<string>> boost_generate_samples(const vector<vector<string>> combinations, const uint1024_t &sample_size)
+		{
+			if (combinations.size() == 0)
+			{
+				throw errors::empty_list_error();
+			}
+			precomputed_stats ps = boost_precompute(combinations);
+
+			vector<vector<string>> subset;
+			if (sample_size != ps.max_size)
+			{
+				vector<uint1024_t> sampled_indicies = boost_generate_random_indices(sample_size, ps.max_size);
+				for (const uint1024_t &i : sampled_indicies)
+				{
+					subset.push_back(boost_entry_at(combinations, i, ps));
+				}
+			}
+			else
+			{
+				for (uint1024_t i = 0; i < sample_size; ++i)
+				{
+					subset.push_back(boost_entry_at(combinations, i, ps));
+				}
+			}
+
+			return subset;
+		}
+#else
 		static const vector<vector<string>> generate_samples(const vector<vector<string>> combinations, const unsigned long long &sample_size)
 		{
 			if (combinations.size() == 0)
@@ -106,7 +167,19 @@ namespace lazycp
 
 			return subset;
 		}
+#endif
+#ifdef USE_BOOST
+		static const uint1024_t boost_compute_max_size(const vector<vector<string>> &combinations)
+		{
+			uint1024_t size(1);
+			for (vector<vector<string>>::const_iterator it = combinations.begin(); it != combinations.end(); ++it)
+			{
+				size *= (*it).size();
+			}
 
+			return size;
+		}
+#else
 		static const unsigned long long compute_max_size(const vector<vector<string>> &combinations)
 		{
 			unsigned long long size = 1;
@@ -117,7 +190,32 @@ namespace lazycp
 
 			return size;
 		}
+#endif
 
+#ifdef USE_BOOST
+                static const vector<uint1024_t> boost_generate_random_indices(const uint1024_t &sample_size, const uint1024_t &max_size)
+		{
+			if (sample_size > max_size)
+			{
+				throw errors::invalid_sample_size_error();
+			}
+                        typedef independent_bits_engine<mt19937, 1024, uint1024_t> generator_type;
+                        generator_type gen;
+			vector<uint1024_t> random_indices;
+			uniform_int_distribution<uint1024_t> dist{0,(max_size - 1)};
+			unordered_set<uint1024_t> candidates;
+			while (candidates.size() < sample_size)
+			{
+				candidates.insert(dist(gen));
+			}
+
+			random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
+
+			sort(random_indices.begin(), random_indices.end());
+
+			return random_indices;
+		}
+#else
 		static const vector<unsigned long long> generate_random_indices(const unsigned long long &sample_size, const unsigned long long &max_size)
 		{
 			if (sample_size > max_size)
@@ -141,7 +239,34 @@ namespace lazycp
 
 			return random_indices;
 		}
+#endif
 	private:
+#ifdef USE_BOOST
+		static const precomputed_stats boost_precompute(const vector<vector<string>> &combinations)
+		{
+			precomputed_stats ps;
+			if (combinations.size() == 0)
+			{
+				throw errors::empty_answers_error();
+			}
+
+			long long size = combinations.size();
+			ps.divs.resize(size);
+			ps.mods.resize(size);
+			uint1024_t factor = 1;
+
+			for (long long i = size - 1; i >= 0; --i)
+			{
+				uint1024_t items(combinations[i].size());
+				ps.divs[i] = factor;
+				ps.mods[i] = items;
+				factor *= items;
+			}
+
+			ps.max_size = boost_compute_max_size(combinations);
+			return ps;
+		}
+#else
 		static const precomputed_stats precompute(const vector<vector<string>> &combinations)
 		{
 			precomputed_stats ps;
@@ -157,7 +282,7 @@ namespace lazycp
 
 			for (long long i = size - 1; i >= 0; --i)
 			{
-				long long items = combinations[i].size();
+				unsigned long long items = combinations[i].size();
 				ps.divs[i] = factor;
 				ps.mods[i] = items;
 				factor *= items;
@@ -166,12 +291,33 @@ namespace lazycp
 			ps.max_size = compute_max_size(combinations);
 			return ps;
 		}
-		
+#endif
+#ifdef USE_BOOST
+		static const bool boost_sample_size_valid(const uint1024_t &sample, const uint1024_t &max_size)
+		{
+			return sample <= max_size;
+		}
+
+#endif
 		static const bool sample_size_valid(const unsigned long long &sample, const unsigned long &max_size)
 		{
 			return sample <= max_size;
 		}
-		
+#ifdef USE_BOOST
+		static const vector<string> boost_entry_at(const vector<vector<string>> &combinations, const uint1024_t &n, const precomputed_stats &ps)
+		{
+			unsigned long long length(combinations.size());
+			vector<string> combination(length);
+
+			for (unsigned long long i = 0; i < length; ++i)
+			{
+				combination[i] = combinations[i][(unsigned long long)((uint1024_t)(n / ps.divs[i]) % ps.mods[i])];
+			}
+
+			return combination;
+		}
+
+#else	
 		static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &n, const precomputed_stats &ps)
 		{
 			unsigned long long length = combinations.size();
@@ -179,14 +325,14 @@ namespace lazycp
 
 			for (unsigned long long i = 0; i < length; ++i)
 			{
-				combination[i] = combinations[i][(n / ps.divs[i]) % ps.mods[i]];
+				combination[i] = combinations[i][(unsigned long long)(floor(n / ps.divs[i])) % ps.mods[i]];
 			}
 
 			return combination;
 		}
 
 		lazy_cartesian_product() {}
+#endif
 	};
 }
-
 #endif
