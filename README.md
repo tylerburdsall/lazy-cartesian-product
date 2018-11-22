@@ -4,7 +4,7 @@ A small .hpp library that can generate combinations with a focus on memory-effic
 ## Introduction
 When generating data, it may be necessary to create a set of distinct possible combinations. This can be useful for statistics, filling up a database, or running some function over the a combination (like generating cost data given combination `{x, y, z}`). A lot of libraries exist to do this, but memory space can quickly run out when the amount of combinations rises to a very large number.
 
-The library also focuses on using STL utilities from the C++ language without the need for extra overhead (like Boost).
+This library also provides the flexibility of operating on VERY large sets of data. If you have [boost](https://www.boost.org) installed, you can utilize its features and operate on numbers from 0 - 2^1024 - 1. (See the **Installation** section for more).
 
 If you would like to see how this library was implemented, [combigen](https://github.com/iamtheburd/combigen) is a CLI tool that helps generate distinct combinations and output them to `.csv` or `.json` format.
 
@@ -33,10 +33,12 @@ using lazycp::lazy-cartesian-product; // For easier access
 
 When compiling your project, ensure that it compiles to the C++11 standard (`-std=c++11` flag for GCC). 
 
+If you need to operate on larger numbers than allowed from an `unsigned long long` data type, also add the compilation flag `-DUSE_BOOST` when compiling (assuming you already have `boost` installed on your machine).
+
 ## Example Usage
 While `lazy-cartesian-product` can be used in many situations, below are a few examples showcasing some of the functions of the library:
 
-### Basic Example
+### Basic Example (without boost)
 First, we can generate a possible combination at the *nth* entry. For this example, we can find the combination of pizza components at the 5th entry.
 ```
 #include <string>
@@ -75,7 +77,7 @@ int main (int argc, char* argv[])
 }
 ```
 
-### Generate Random Sample (Performance)
+### Generate Random Sample (Performance, without boost)
 Next, we will generate a random sample of combinations. This is especially useful
 for data analysis when data needs to be generated in an evenly-distributed manner.
 This example focuses on high-performance at the expense of memory usage (for large-computations, of course).
@@ -94,8 +96,6 @@ using lazycp::lazy_cartesian_product;
 
 int main (int argc, char* argv[])
 {
-     
-          
      vector<string> crusts   = { "Thin", "Thick", "Cheese-stuffed", "Garlic-rubbed" };
      vector<string> sauces   = { "Marinara", "BBQ", "None" };
      vector<string> cheeses  = { "Mozarella", "Cheddar", "Parmesan" };
@@ -130,7 +130,7 @@ int main (int argc, char* argv[])
 }
 ```
 
-### Generate Random Sample (Memory-optimized)
+### Generate Random Sample (Memory-optimized, without boost)
 Finally, we can generate a random sample of combinations but do so without
 consuming a lot of memory. By using some of the provided functions, we can
 sacrifice a small amount of computing time so that very little memory space
@@ -151,8 +151,6 @@ using lazycp::lazy_cartesian_product;
 
 int main (int argc, char* argv[])
 {
-     
-           
      vector<string> crusts   = { "Thin", "Thick", "Cheese-stuffed", "Garlic-rubbed" };
      vector<string> sauces   = { "Marinara", "BBQ", "None" };
      vector<string> cheeses  = { "Mozarella", "Cheddar", "Parmesan" };
