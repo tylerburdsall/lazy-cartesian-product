@@ -16,6 +16,8 @@ Input will always be a `vector<vector<string>>`. This keeps things nice and simp
 * `compute_max_size` - Computes the maximum amount of possible combinations
 * `generate_random_indices` - Given the desired sample size and the maximum size, this function will return a `vector<long>` containaining an evenly-distributed list of indices throughout the range given.
 
+If you use the `boost` library, all of the above functions will instead be prepended with `boost_` (see more in **Example Usage**).
+
 This project is also licensed under the MIT license, so feel free to use and change this however you please.
 
 ## Installation
@@ -31,15 +33,47 @@ using lazycp::lazy-cartesian-product; // For easier access
 ...
 ```
 
-When compiling your project, ensure that it compiles to the C++11 standard (`-std=c++11` flag for GCC). 
+When compiling your project, ensure that it compiles to the C++14 standard (`-std=c++14` flag for g++). 
 
-If you need to operate on larger numbers than allowed from an `unsigned long long` data type, also add the compilation flag `-DUSE_BOOST` when compiling (assuming you already have `boost` installed on your machine).
+## Prerequisites:
+You will need the following installed before including this library into your project:
+
+### Linux:
+* C++ compiler capable of compiling to the C++14 or higher standard
+* [boost](https://www.boost.org) if you plan to operate with large sets of data/numbers
+
+You can also use your distro's package manager to install the necessary Boost libraries:
+
+#### Debian/Ubuntu
+`$ sudo apt install libboost-all-dev`
+
+#### Fedora
+`$ sudo dnf install boost`
+
+#### Arch/Manjaro/Antergos
+`$ sudo pacman -Sy boost`
+
+
+### Windows:
+I highly recommend downloaded the pre-compiled libraries for your system and installing them somewhere easy to remember. You will need this library path later when compiling your project.
+
+
+### Compiling with boost
+If you need to operate on larger sets of data, it is recommended to install the `boost` library. Follow the appropriate instructions for your operating system to install `boost` onto your machine.
+
+#### Linux/UNIX/Cygwin
+Assuming you had one file called `main.cpp`, you can simply compile with the following line:
+
+```
+$ g++ -Wall -O2 -std=c++14 -DUSE_BOOST main.cpp -lboost_random  # Note: it is crucial the -lboost_random flag comes last
+```
 
 ## Example Usage
 While `lazy-cartesian-product` can be used in many situations, below are a few examples showcasing some of the functions of the library:
 
-### Basic Example (without boost)
+### Basic Example (without Boost)
 First, we can generate a possible combination at the *nth* entry. For this example, we can find the combination of pizza components at the 5th entry.
+
 ```
 #include <string>
 #include <vector>
@@ -77,7 +111,8 @@ int main (int argc, char* argv[])
 }
 ```
 
-### Generate Random Sample (Performance, without boost)
+
+### Generate Random Sample (Performance, without Boost)
 Next, we will generate a random sample of combinations. This is especially useful
 for data analysis when data needs to be generated in an evenly-distributed manner.
 This example focuses on high-performance at the expense of memory usage (for large-computations, of course).
@@ -130,7 +165,7 @@ int main (int argc, char* argv[])
 }
 ```
 
-### Generate Random Sample (Memory-optimized, without boost)
+### Generate Random Sample (Memory-optimized, without Boost)
 Finally, we can generate a random sample of combinations but do so without
 consuming a lot of memory. By using some of the provided functions, we can
 sacrifice a small amount of computing time so that very little memory space
@@ -177,6 +212,53 @@ int main (int argc, char* argv[])
      return 0;
 }
 ```
+
+
+## Example Usage (with Boost)
+The following examples demonstrate the same functionality as above, but with the Boost library installed.
+
+
+### Basic Example (with Boost)
+First, we can generate a possible combination at the *nth* entry. For this example, we can find the combination of pizza components at the 5th entry.
+
+```cpp
+#include <string>
+#include <iostream>
+#include <lazy-cartesian-product.hpp>   // Assumes the .hpp file is in the same directory
+#include <boost/containers/vector.hpp>  // Notice how we now use the Boost libraries
+#include <boost/multiprecision/cpp_int.hpp>
+
+using std::cout;
+using boost::containers::vector;
+using namespace boost::multiprecision;
+
+using lazycp::lazy_cartesian_product;   // For easier readability
+
+int main (int argc, char* argv[])
+{
+     vector<string> crusts   = { // Some REALLY big amount };
+     vector<string> sauces   = { ... };
+     vector<string> cheeses  = { ... };
+     vector<string> toppings = { ... };
+
+     // Put all of the vectors together so lazy-cartesian-product can accept the input
+     vector<vector<string>> possibilities = { crusts, sauces, cheeses, toppings };
+
+     // Show the combination at the 18909849082309840923850987th index
+     string index("18909849082309840923850987"); // Now we instead pass in a string
+     vector<string> result = lazy_cartesian_product::boost_entry_at(possibilities, index);
+
+     // Display result:
+     for (const string &entry: result)
+     {
+        cout << result << ", ";
+     }
+     cout << "\n";
+ 
+     return 0;
+}
+```
+
 
 ## TODOs
 * Add better exception-handling
