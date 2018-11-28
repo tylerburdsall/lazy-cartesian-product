@@ -316,5 +316,5 @@ namespace lazycp
 #endif
                 lazy_cartesian_product() {}
 	};
-#endif
 }
+#endif
