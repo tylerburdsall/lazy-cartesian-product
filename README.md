@@ -4,7 +4,7 @@ A small .hpp library that can generate combinations with a focus on memory-effic
 ## Introduction
 When generating data, it may be necessary to create a set of distinct possible combinations. This can be useful for statistics, filling up a database, or running some function over the a combination (like generating cost data given combination `{x, y, z}`). A lot of libraries exist to do this, but memory space can quickly run out when the amount of combinations rises to a very large number.
 
-This library also provides the flexibility of operating on VERY large sets of data. If you have [boost](https://www.boost.org) installed, you can utilize its features and operate on numbers from 0 - 2^1024 - 1. (See the **Installation** section for more).
+This library also provides the flexibility of operating on VERY large sets of data. If you have [Boost](https://www.boost.org) installed, you can utilize its features and operate on numbers from 0 - 2^1024 - 1. (See the **Installation** section for more).
 
 If you would like to see how this library was implemented, [combigen](https://github.com/iamtheburd/combigen) is a CLI tool that helps generate distinct combinations and output them to `.csv` or `.json` format.
 
@@ -14,7 +14,7 @@ Input will always be a `vector<vector<string>>`. This keeps things nice and simp
 * `entry_at` - Generates the *nth* combination at entry `index`
 * `generate_samples` - Generates a random (distinct, evenly spread out) subset of possible combinations of size `sample_size`
 * `compute_max_size` - Computes the maximum amount of possible combinations
-* `generate_random_indices` - Given the desired sample size and the maximum size, this function will return a `vector<long>` containaining an evenly-distributed list of indices throughout the range given.
+* `generate_random_indices` - Given the desired sample size and the maximum size, this function will return a `vector` containing an evenly-distributed list of indices throughout the range given.
 
 If you use the `boost` library, all of the above functions will instead be prepended with `boost_` (see more in **Example Usage**).
 
@@ -55,10 +55,10 @@ You can also use your distro's package manager to install the necessary Boost li
 
 
 ### Windows:
-I highly recommend downloaded the pre-compiled libraries for your system and installing them somewhere easy to remember. You will need this library path later when compiling your project.
+* Visual Studio 2015+
+* Boost, either installed system-wide or you've downloaded the precompiled libraries for your systema and placed them somewhere easy to remember
 
-
-### Compiling with boost
+### Compiling with Boost functionality
 If you need to operate on larger sets of data, it is recommended to install the `boost` library. Follow the appropriate instructions for your operating system to install `boost` onto your machine.
 
 #### Linux/UNIX/Cygwin
@@ -67,6 +67,16 @@ Assuming you had one file called `main.cpp`, you can simply compile with the fol
 ```
 $ g++ -Wall -O2 -std=c++14 -DUSE_BOOST main.cpp -lboost_random  # Note: it is crucial the -lboost_random flag comes last
 ```
+
+#### Windows
+1. Open up the x64 version of the Visual Studio compiler (usually found under Start Menu -> Visual Studio 20XX -> x64 Native Tools Command Propmpt for VS 20XX), with XX being your installed version
+2. Navigate to the directory where your project is located
+3. Assuming you are just straight-compiling your source files and downloaded the precompiled libraries, enter this command:
+```
+cl /EHsc /DUSE_BOOST /I C:\path\to\boost_1_68_0 your_file.cpp /link /LIBPATH:C:\path\to\boost_1_68_0\lib64-msvc-14.1
+```
+
+If you would like to see a more complex compilation example take a look at the [combigen Makefile](https://github.com/iamtheburd/combigen/blob/master/Makefile).
 
 ## Example Usage
 While `lazy-cartesian-product` can be used in many situations, below are a few examples showcasing some of the functions of the library:
@@ -78,7 +88,7 @@ First, we can generate a possible combination at the *nth* entry. For this examp
 #include <string>
 #include <vector>
 #include <iostream>
-#include <lazy-cartesian-product.hpp>   // Assumes the .hpp file is in the same directory
+#include "lazy-cartesian-product.hpp"   // Assumes the .hpp file is in the same directory
 
 using std::cout;
 using std::vector;
@@ -121,7 +131,7 @@ This example focuses on high-performance at the expense of memory usage (for lar
 #include <string>
 #include <vector>
 #include <iostream>
-#include <lazy-cartesian-product.hpp>   
+#include "lazy-cartesian-product.hpp"
 
 using std::cout;
 using std::vector;
@@ -172,11 +182,12 @@ sacrifice a small amount of computing time so that very little memory space
 is used. As such, the only limiters that remain are I/O performance and availability
 of disk space. This is especially useful for lower-end machines.
 
+
 ```
 #include <string>
 #include <vector>
 #include <iostream>
-#include <lazy-cartesian-product.hpp>   
+#include "lazy-cartesian-product.hpp"
 
 using std::cout;
 using std::vector;
@@ -194,13 +205,13 @@ int main (int argc, char* argv[])
      vector<vector<string>> possibilities = { crusts, sauces, cheeses, toppings };
 
      // First, find the max size of the combinations
-     long max_size = lazy_cartesian_product::compute_max_size(possiblities);
+     unsigned long long max_size = lazy_cartesian_product::compute_max_size(possiblities);
 
      // Next, generate a list of random indices to find
-     vector<long> random_indices = lazy_cartesian_product::generate_random_indices(100, max_size);
+     vector<unsigned long long> random_indices = lazy_cartesian_product::generate_random_indices(100, max_size);
     
      // Finally, iterate through the random indices, generate a combination, and display it
-     for (const long &index: random_indices)
+     for (const unsigned long long &index: random_indices)
      {
         vector<string> entry = lazy_cartesian_product::entry_at(possibilities, index);
         for (const string &item: entry)
@@ -224,13 +235,12 @@ First, we can generate a possible combination at the *nth* entry. For this examp
 ```cpp
 #include <string>
 #include <iostream>
-#include <lazy-cartesian-product.hpp>   // Assumes the .hpp file is in the same directory
-#include <boost/containers/vector.hpp>  // Notice how we now use the Boost libraries
-#include <boost/multiprecision/cpp_int.hpp>
+#include "lazy-cartesian-product.hpp"   // Assumes the .hpp file is in the same directory
+#include <boost/container/vector.hpp>  // Notice how we now use the Boost libraries
 
+using std::string;
 using std::cout;
-using boost::containers::vector;
-using namespace boost::multiprecision;
+using boost::container::vector;
 
 using lazycp::lazy_cartesian_product;   // For easier readability
 
@@ -259,6 +269,94 @@ int main (int argc, char* argv[])
 }
 ```
 
+
+### Generate Random Sample (Performance, with Boost)
+
+```cpp
+#include <string>
+#include <iostream>
+#include "lazy-cartesian-product.hpp"
+#include <boost/container/vector.hpp>  
+
+using std::string;
+using std::cout;
+using boost::container::vector;
+
+using lazycp::lazy_cartesian_product;   
+
+
+int main (int argc, char* argv[])
+{
+     vector<string> crusts   = { // Some REALLY big amount };
+     vector<string> sauces   = { ... };
+     vector<string> cheeses  = { ... };
+     vector<string> toppings = { ... };
+
+     vector<vector<string>> possibilities = { crusts, sauces, cheeses, toppings };
+    
+     // Generate an incredibly large sample size
+     string sample_size = "478928739482739877729118939847";
+     vector<vector<string>> random_samples = lazy_cartesian_product::boost_generate_samples(possibilities, sample_size);
+
+     for (const vector<string> &entry: random_samples) 
+     {
+        for (const string &item: entry)
+        {
+            cout << item << ", ";
+        }
+        cout << "\n";
+     }
+     return 0;
+}
+```
+
+### Generate Random Sample (Memory-optimized, with Boost)
+
+```cpp
+#include <string>
+#include <iostream>
+#include "lazy-cartesian-product.hpp"
+#include <boost/container/vector.hpp>  
+#include <boost/multiprecision/cpp_int.hpp>    // Now we need the cpp_int library
+
+using std::string;
+using std::cout;
+using boost::container::vector;
+using boost::multiprecision::uint1024_t;       // This way we can compute the max size
+
+using lazycp::lazy_cartesian_product;   
+
+int main (int argc, char* argv[])
+{
+     vector<string> crusts   = { // Some REALLY big amount };
+     vector<string> sauces   = { ... };
+     vector<string> cheeses  = { ... };
+     vector<string> toppings = { ... };
+
+
+     vector<vector<string>> possibilities = { crusts, sauces, cheeses, toppings };
+
+     // First, find the max size of the combinations
+     uint1024_t max_size = lazy_cartesian_product::boost_compute_max_size(possiblities);
+
+     // Next, generate a list of random indices to find (but of type uint1024_t)
+     string sample_size = "478928739482739877729118939847";
+     vector<uint1024_t> random_indices = lazy_cartesian_product::boost_generate_random_indices(sample_size, max_size);
+    
+     // Finally, iterate through the random indices, generate a combination, and display it
+     for (const uint1024_t &index: random_indices)
+     {
+        // Note: we need to convert the index to a string to find the entry_at, so we use the convert_to function
+        vector<string> entry = lazy_cartesian_product::boost_entry_at(possibilities, index.convert_to<string>()); 
+        for (const string &item: entry)
+        {
+            cout << item << ", ";
+        }
+        cout << "\n";
+     }
+     return 0;
+}
+```
 
 ## TODOs
 * Add better exception-handling
