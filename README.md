@@ -84,7 +84,7 @@ While `lazy-cartesian-product` can be used in many situations, below are a few e
 ### Basic Example (without Boost)
 First, we can generate a possible combination at the *nth* entry. For this example, we can find the combination of pizza components at the 5th entry.
 
-```
+```cpp
 #include <string>
 #include <vector>
 #include <iostream>
@@ -127,7 +127,7 @@ Next, we will generate a random sample of combinations. This is especially usefu
 for data analysis when data needs to be generated in an evenly-distributed manner.
 This example focuses on high-performance at the expense of memory usage (for large-computations, of course).
 
-```
+```cpp
 #include <string>
 #include <vector>
 #include <iostream>
@@ -183,7 +183,7 @@ is used. As such, the only limiters that remain are I/O performance and availabi
 of disk space. This is especially useful for lower-end machines.
 
 
-```
+```cpp
 #include <string>
 #include <vector>
 #include <iostream>
