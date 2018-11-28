@@ -12,32 +12,34 @@
 #define LCP_MINOR_VERSION 3
 
 #include <string>
-#include <algorithm>
 #include <fstream>
-#include <unordered_set>
 #include <stdexcept>
 #include <cmath>
 #ifdef USE_BOOST
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/random.hpp>
+#include <boost/random/random_device.hpp>
 #include <boost/container/vector.hpp>
+#include <boost/container/set.hpp>
 using namespace boost::random;
 using namespace boost::multiprecision;
 using boost::container::vector;
+using boost::container::set;
+using boost::random::random_device;
 #else
 #include <random>
 #include <vector>
+#include <set>
 using std::mt19937_64;
 using std::uniform_int_distribution;
 using std::random_device;
 using std::vector;
+using std::set;
 #endif
 
 using std::fstream;
 using std::ios;
-using std::sort;
 using std::string;
-using std::unordered_set;
 using std::runtime_error;
 using std::floor;
 
@@ -140,19 +142,18 @@ namespace lazycp
 			{
 				throw errors::invalid_sample_size_error();
 			}
-                        typedef independent_bits_engine<mt19937, 1024, uint1024_t> generator_type;
-                        generator_type gen;
 			vector<uint1024_t> random_indices;
+			auto seed = random_device{}();
+			mt19937 gen{seed};
 			uniform_int_distribution<uint1024_t> dist{0,(max_size - 1)};
-			unordered_set<uint1024_t> candidates;
+			set<uint1024_t> candidates;
+
 			while (candidates.size() < sample_size)
 			{
 				candidates.insert(dist(gen));
 			}
 
 			random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
-
-			sort(random_indices.begin(), random_indices.end());
 
 			return random_indices;
 		}
@@ -216,15 +217,13 @@ namespace lazycp
 			random_device rd;
 			mt19937_64 generator{rd()};
 			uniform_int_distribution<unsigned long long> dist{0,(max_size - 1)};
-			unordered_set<unsigned long long> candidates;
+			set<unsigned long long> candidates;
 			while (candidates.size() < sample_size)
 			{
 				candidates.insert(dist(generator));
 			}
 
 			random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
-
-			sort(random_indices.begin(), random_indices.end());
 
 			return random_indices;
 		}
