@@ -40,7 +40,7 @@ You will need the following installed before including this library into your pr
 
 ### Linux:
 * C++ compiler capable of compiling to the C++14 or higher standard
-* [boost](https://www.boost.org) if you plan to operate with large sets of data/numbers
+* [Boost](https://www.boost.org) if you plan to operate with large sets of data/numbers
 
 You can also use your distro's package manager to install the necessary Boost libraries:
 
@@ -56,10 +56,10 @@ You can also use your distro's package manager to install the necessary Boost li
 
 ### Windows:
 * Visual Studio 2015+
-* Boost, either installed system-wide or you've downloaded the precompiled libraries for your systema and placed them somewhere easy to remember
+* Boost, either installed system-wide or you've downloaded the precompiled libraries for your system and placed them somewhere easy to remember
 
 ### Compiling with Boost functionality
-If you need to operate on larger sets of data, it is recommended to install the `boost` library. Follow the appropriate instructions for your operating system to install `boost` onto your machine.
+If you need to operate on larger sets of data, it is recommended to install the Boost library. Follow the appropriate instructions for your operating system to install `boost` onto your machine.
 
 #### Linux/UNIX/Cygwin
 Assuming you had one file called `main.cpp`, you can simply compile with the following line:
@@ -73,7 +73,7 @@ $ g++ -Wall -O2 -std=c++14 -DUSE_BOOST main.cpp -lboost_random  # Note: it is cr
 2. Navigate to the directory where your project is located
 3. Assuming you are just straight-compiling your source files and downloaded the precompiled libraries, enter this command:
 ```
-cl /EHsc /DUSE_BOOST /I C:\path\to\boost_1_68_0 your_file.cpp /link /LIBPATH:C:\path\to\boost_1_68_0\lib64-msvc-14.1
+cl /EHsc /DUSE_BOOST /I C:\path\to\boost_1_68_0 main.cpp /link /LIBPATH:C:\path\to\boost_1_68_0\lib64-msvc-14.1
 ```
 
 If you would like to see a more complex compilation example take a look at the [combigen Makefile](https://github.com/iamtheburd/combigen/blob/master/Makefile).
