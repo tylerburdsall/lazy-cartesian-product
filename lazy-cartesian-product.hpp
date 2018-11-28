@@ -111,7 +111,7 @@ namespace lazycp
                 vector<vector<string>> subset;
                 if (parsed_sample_size != ps.max_size)
                 {
-                    vector<uint1024_t> sampled_indicies = boost_generate_random_indices(parsed_sample_size, ps.max_size);
+                    vector<uint1024_t> sampled_indicies = boost_generate_random_indices(sample_size, ps.max_size);
                     for (const uint1024_t &i : sampled_indicies)
                     {
                         subset.push_back(boost_entry_at(combinations, i, ps));
@@ -119,7 +119,7 @@ namespace lazycp
                 }
                 else
                 {
-                    for (uint1024_t i = 0; i < sample_size; ++i)
+                    for (uint1024_t i = 0; i < parsed_sample_size; ++i)
                     {
                         subset.push_back(boost_entry_at(combinations, i, ps));
                     }
