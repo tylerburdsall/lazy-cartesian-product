@@ -9,7 +9,7 @@
 #define _LAZY_CARTESIAN_PRODUCT
 
 #define LCP_MAJOR_VERSION 1
-#define LCP_MINOR_VERSION 3
+#define LCP_MINOR_VERSION 4
 
 #include <string>
 #include <fstream>
@@ -111,8 +111,8 @@ namespace lazycp
                 vector<vector<string>> subset;
                 if (parsed_sample_size != ps.max_size)
                 {
-                    vector<uint1024_t> sampled_indicies = boost_generate_random_indices(sample_size, ps.max_size);
-                    for (const uint1024_t &i : sampled_indicies)
+                    set<uint1024_t> sampled_indices = boost_generate_random_indices(sample_size, ps.max_size);
+                    for (const uint1024_t &i : sampled_indices)
                     {
                         subset.push_back(boost_entry_at(combinations, i, ps));
                     }
@@ -137,7 +137,7 @@ namespace lazycp
 
                 return size;
             }
-            static const vector<uint1024_t> boost_generate_random_indices(const string &sample_size_string, const uint1024_t &max_size)
+            static const set<uint1024_t> boost_generate_random_indices(const string &sample_size_string, const uint1024_t &max_size)
             {
                 uint1024_t sample_size(sample_size_string);
                 if (sample_size > max_size)
@@ -154,10 +154,7 @@ namespace lazycp
                 {
                     candidates.insert(dist(gen));
                 }
-
-                random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
-
-                return random_indices;
+                return candidates;
             }
 #else
             static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &index)
@@ -182,8 +179,8 @@ namespace lazycp
                 vector<vector<string>> subset;
                 if (sample_size != ps.max_size)
                 {
-                    vector<unsigned long long> sampled_indicies = generate_random_indices(sample_size, ps.max_size);
-                    for (const unsigned long long &i : sampled_indicies)
+                    set<unsigned long long> sampled_indices = generate_random_indices(sample_size, ps.max_size);
+                    for (const unsigned long long &i : sampled_indices)
                     {
                         subset.push_back(entry_at(combinations, i, ps));
                     }
@@ -225,9 +222,7 @@ namespace lazycp
                     candidates.insert(dist(generator));
                 }
 
-                random_indices.insert(random_indices.end(), candidates.begin(), candidates.end());
-
-                return random_indices;
+                return candidates;
             }
 #endif
         private:
