@@ -205,7 +205,7 @@ namespace lazycp
 
                 return size;
             }
-            static const vector<unsigned long long> generate_random_indices(const unsigned long long &sample_size, const unsigned long long &max_size)
+            static const set<unsigned long long> generate_random_indices(const unsigned long long &sample_size, const unsigned long long &max_size)
             {
                 if (sample_size > max_size)
                 {
