@@ -14,7 +14,7 @@ Input will always be a `vector<vector<string>>`. This keeps things nice and simp
 * `entry_at` - Generates the *nth* combination at entry `index`
 * `generate_samples` - Generates a random (distinct, evenly spread out) subset of possible combinations of size `sample_size`
 * `compute_max_size` - Computes the maximum amount of possible combinations
-* `generate_random_indices` - Given the desired sample size and the maximum size, this function will return a `vector` containing an evenly-distributed list of indices throughout the range given.
+* `generate_random_indices` - Given the desired sample size and the maximum size, this function will return a `set` containing an evenly-distributed list of indices throughout the range given.
 
 If you use the `boost` library, all of the above functions will instead be prepended with `boost_` (see more in **Example Usage**).
 
@@ -186,11 +186,13 @@ of disk space. This is especially useful for lower-end machines.
 ```cpp
 #include <string>
 #include <vector>
+#include <set>
 #include <iostream>
 #include "lazy-cartesian-product.hpp"
 
 using std::cout;
 using std::vector;
+using std::set;
 
 using lazycp::lazy_cartesian_product;   
 
@@ -208,7 +210,7 @@ int main (int argc, char* argv[])
      unsigned long long max_size = lazy_cartesian_product::compute_max_size(possiblities);
 
      // Next, generate a list of random indices to find
-     vector<unsigned long long> random_indices = lazy_cartesian_product::generate_random_indices(100, max_size);
+     set<unsigned long long> random_indices = lazy_cartesian_product::generate_random_indices(100, max_size);
     
      // Finally, iterate through the random indices, generate a combination, and display it
      for (const unsigned long long &index: random_indices)
@@ -317,11 +319,13 @@ int main (int argc, char* argv[])
 #include <iostream>
 #include "lazy-cartesian-product.hpp"
 #include <boost/container/vector.hpp>  
+#include <boost/container/set.hpp>  
 #include <boost/multiprecision/cpp_int.hpp>    // Now we need the cpp_int library
 
 using std::string;
 using std::cout;
 using boost::container::vector;
+using boost::container::set;
 using boost::multiprecision::uint1024_t;       // This way we can compute the max size
 
 using lazycp::lazy_cartesian_product;   
@@ -341,7 +345,7 @@ int main (int argc, char* argv[])
 
      // Next, generate a list of random indices to find (but of type uint1024_t)
      string sample_size = "478928739482739877729118939847";
-     vector<uint1024_t> random_indices = lazy_cartesian_product::boost_generate_random_indices(sample_size, max_size);
+     set<uint1024_t> random_indices = lazy_cartesian_product::boost_generate_random_indices(sample_size, max_size);
     
      // Finally, iterate through the random indices, generate a combination, and display it
      for (const uint1024_t &index: random_indices)
