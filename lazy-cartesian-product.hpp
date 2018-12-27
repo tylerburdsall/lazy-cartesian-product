@@ -9,7 +9,7 @@
 #define _LAZY_CARTESIAN_PRODUCT
 
 #define LCP_MAJOR_VERSION 1
-#define LCP_MINOR_VERSION 5
+#define LCP_MINOR_VERSION 6
 
 #include <string>
 #include <fstream>
@@ -241,6 +241,7 @@ namespace lazycp
                 vector<vector<string>> subset;
                 if (sample_size != ps.max_size)
                 {
+		    subset.reserve(sample_size);
                     RandomIterator iter(sample_size, ps.max_size);
                     while(iter.has_next())
                     {
@@ -249,6 +250,7 @@ namespace lazycp
                 }
                 else
                 {
+		    subset.reserve(sample_size);
                     for (unsigned long long i = 0; i < sample_size; ++i)
                     {
                         subset.push_back(entry_at(combinations, i, ps));
