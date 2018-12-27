@@ -11,6 +11,11 @@
 #define LCP_MAJOR_VERSION 1
 #define LCP_MINOR_VERSION 6
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#define _HAS_ITERATOR_DEBUGGING 0
+#define _SECURE_SCL 0
+#endif
+
 #include <string>
 #include <fstream>
 #include <stdexcept>
@@ -117,7 +122,7 @@ namespace lazycp
 #else
             RandomIterator(const string &amount, const string &max): gen((random_device())())
             {
-                num_left = stoull(amount, 0, 0);
+                num_left = stoull(amount, 0, 10);
                 last_k = 0;
                 n = stoull(max, 0, 0);
             }
