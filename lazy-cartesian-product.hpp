@@ -9,7 +9,7 @@
 #define _LAZY_CARTESIAN_PRODUCT
 
 #define LCP_MAJOR_VERSION 1
-#define LCP_MINOR_VERSION 4
+#define LCP_MINOR_VERSION 5
 
 #include <string>
 #include <fstream>
@@ -20,26 +20,23 @@
 #include <boost/random.hpp>
 #include <boost/random/random_device.hpp>
 #include <boost/container/vector.hpp>
-#include <boost/container/set.hpp>
 using namespace boost::random;
 using namespace boost::multiprecision;
 using boost::container::vector;
-using boost::container::set;
 using boost::random::random_device;
 #else
 #include <random>
 #include <vector>
-#include <set>
 using std::mt19937_64;
 using std::uniform_int_distribution;
 using std::random_device;
 using std::vector;
-using std::set;
 #endif
 
 using std::fstream;
 using std::ios;
 using std::string;
+using std::out_of_range;
 using std::runtime_error;
 using std::floor;
 
@@ -83,6 +80,89 @@ namespace lazycp
         unsigned long long max_size;
     };
 #endif
+    class RandomIterator
+    {
+        public:
+#ifdef USE_BOOST
+            RandomIterator(const string &amount, const string &max): gen((random_device())())
+            {
+                num_left.assign(amount);
+                last_k.assign(0);
+                n.assign(max);
+            }
+
+            RandomIterator(const uint1024_t &amount, const uint1024_t &max): gen((random_device())())
+            {
+                num_left.assign(amount);
+                last_k.assign(0);
+                n.assign(max);
+            }
+            const uint1024_t next(void)
+            {
+                if (num_left > 0)
+                {
+                    uint1024_t range_size((n - last_k) / num_left);
+                    uniform_int_distribution<uint1024_t> rnd(0, range_size);
+                    uint1024_t r(rnd(gen) + last_k + 1);
+                    last_k.assign(r);
+                    num_left--;
+                    return r;
+                }
+                else
+                {
+                    throw out_of_range("Exceeded amount of random numbers to generate.");
+                }
+            }
+
+#else
+            RandomIterator(const string &amount, const string &max): gen((random_device())())
+            {
+                num_left = stoull(amount, 0, 0);
+                last_k = 0;
+                n = stoull(max, 0, 0);
+            }
+
+            RandomIterator(const unsigned long long &amount, const unsigned long long &max)
+            {
+                num_left = amount;
+                last_k = 0;
+                n = max;
+            }
+            const unsigned long long next(void)
+            {
+                if (num_left > 0)
+                {
+                    unsigned long long range_size = (n - last_k) / num_left;
+                    uniform_int_distribution<> rnd(0, range_size);
+                    unsigned long long r = rnd(gen) + last_k + 1;
+                    last_k = r;
+                    num_left--;
+                    return r;
+                }
+                else
+                {
+                    throw out_of_range("Exceeded amount of random numbers to generate.");
+                }
+            }
+#endif
+            const bool has_next(void)
+            {
+                return num_left > 0;
+            }
+
+        private:
+#ifdef USE_BOOST
+            uint1024_t         n;
+            uint1024_t         last_k;
+            uint1024_t         num_left;
+#else
+            unsigned long long n;
+            unsigned long long last_k;
+            unsigned long long num_left;
+#endif
+            mt19937_64         gen;
+    };
+
     class lazy_cartesian_product
     {
         public:
@@ -111,10 +191,10 @@ namespace lazycp
                 vector<vector<string>> subset;
                 if (parsed_sample_size != ps.max_size)
                 {
-                    set<uint1024_t> sampled_indices = boost_generate_random_indices(sample_size, ps.max_size);
-                    for (const uint1024_t &i : sampled_indices)
+                    RandomIterator iter(parsed_sample_size, ps.max_size);
+                    while(iter.has_next())
                     {
-                        subset.push_back(boost_entry_at(combinations, i, ps));
+                        subset.push_back(boost_entry_at(combinations, iter.next(), ps));
                     }
                 }
                 else
@@ -137,25 +217,7 @@ namespace lazycp
 
                 return size;
             }
-            static const set<uint1024_t> boost_generate_random_indices(const string &sample_size_string, const uint1024_t &max_size)
-            {
-                uint1024_t sample_size(sample_size_string);
-                if (sample_size > max_size)
-                {
-                    throw errors::invalid_sample_size_error();
-                }
-                vector<uint1024_t> random_indices;
-                auto seed = random_device{}();
-                mt19937 gen{seed};
-                uniform_int_distribution<uint1024_t> dist{0,(max_size - 1)};
-                set<uint1024_t> candidates;
-
-                while (candidates.size() < sample_size)
-                {
-                    candidates.insert(dist(gen));
-                }
-                return candidates;
-            }
+            
 #else
             static const vector<string> entry_at(const vector<vector<string>> &combinations, const unsigned long long &index)
             {
@@ -179,10 +241,10 @@ namespace lazycp
                 vector<vector<string>> subset;
                 if (sample_size != ps.max_size)
                 {
-                    set<unsigned long long> sampled_indices = generate_random_indices(sample_size, ps.max_size);
-                    for (const unsigned long long &i : sampled_indices)
+                    RandomIterator iter(sample_size, ps.max_size);
+                    while(iter.has_next())
                     {
-                        subset.push_back(entry_at(combinations, i, ps));
+                        subset.push_back(entry_at(combinations, iter.next(), ps));
                     }
                 }
                 else
@@ -204,25 +266,6 @@ namespace lazycp
                 }
 
                 return size;
-            }
-            static const set<unsigned long long> generate_random_indices(const unsigned long long &sample_size, const unsigned long long &max_size)
-            {
-                if (sample_size > max_size)
-                {
-                    throw errors::invalid_sample_size_error();
-                }
-
-                vector<unsigned long long> random_indices;
-                random_device rd;
-                mt19937_64 generator{rd()};
-                uniform_int_distribution<unsigned long long> dist{0,(max_size - 1)};
-                set<unsigned long long> candidates;
-                while (candidates.size() < sample_size)
-                {
-                    candidates.insert(dist(generator));
-                }
-
-                return candidates;
             }
 #endif
         private:
