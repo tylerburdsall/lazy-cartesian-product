@@ -127,7 +127,7 @@ namespace lazycp
                 n = stoull(max, 0, 0);
             }
 
-            RandomIterator(const unsigned long long &amount, const unsigned long long &max)
+            RandomIterator(const unsigned long long &amount, const unsigned long long &max): gen((random_device())())
             {
                 num_left = amount;
                 last_k = 0;
